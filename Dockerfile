@@ -4,7 +4,7 @@
 # BUILD: docker build --rm -t puckel/docker-airflow .
 # SOURCE: https://github.com/puckel/docker-airflow
 
-FROM python:3.7-slim-stretch
+FROM python:3.6-slim
 LABEL maintainer="Puckel_"
 
 # Never prompts the user for choices on installation/configuration of packages
@@ -24,6 +24,8 @@ ENV LANG en_US.UTF-8
 ENV LC_ALL en_US.UTF-8
 ENV LC_CTYPE en_US.UTF-8
 ENV LC_MESSAGES en_US.UTF-8
+
+ENV TZ='Asia/Tokyo'
 
 RUN set -ex \
     && buildDeps=' \
@@ -47,6 +49,11 @@ RUN set -ex \
         rsync \
         netcat \
         locales \
+    # start edit for tfx
+    # && apt install gcc-7 \
+    # && apt install g++-7 \
+    # && update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-7 60 --slave /usr/bin/g++ g++ /usr/bin/g++-7 \
+    # end edit for tfx
     && sed -i 's/^# en_US.UTF-8 UTF-8$/en_US.UTF-8 UTF-8/g' /etc/locale.gen \
     && locale-gen \
     && update-locale LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8 \
@@ -56,7 +63,17 @@ RUN set -ex \
     && pip install pyOpenSSL \
     && pip install ndg-httpsclient \
     && pip install pyasn1 \
-    && pip install apache-airflow[crypto,celery,postgres,hive,jdbc,mysql,ssh${AIRFLOW_DEPS:+,}${AIRFLOW_DEPS}]==${AIRFLOW_VERSION} \
+    # start edit for tfx
+    && pip install 'kombu==4.6.7' \
+    && pip install 'httplib2==0.12.0' \
+    && pip install 'pendulum==1.4.4' \
+    # end edit for tfx
+    && pip install apache-airflow[crypto,celery,postgres,hive,jdbc,ssh${AIRFLOW_DEPS:+,}${AIRFLOW_DEPS}]==${AIRFLOW_VERSION} \
+    # start edit for tfx
+    && pip install 'tensorflow==1.15.0' \
+    && pip install 'tfx==0.15.0' \
+    && pip install 'apache-beam==2.16.0' \
+    # end edit for tfx
     && pip install 'redis==3.2' \
     && if [ -n "${PYTHON_DEPS}" ]; then pip install ${PYTHON_DEPS}; fi \
     && apt-get purge --auto-remove -yqq $buildDeps \

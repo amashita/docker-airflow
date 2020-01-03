@@ -8,7 +8,7 @@ services:
             - POSTGRES_DB=airflow
 
     webserver:
-        image: puckel/docker-airflow:1.10.6
+        image: puckel/docker-airflow:latest
         restart: always
         depends_on:
             - postgres
@@ -19,6 +19,12 @@ services:
             - ./dags:/usr/local/airflow/dags
             # Uncomment to include custom plugins
             # - ./plugins:/usr/local/airflow/plugins
+            # start for tfx
+            - ./data:/usr/local/airflow/data
+            - ./serving_model:/usr/local/airflow/serving_model
+            - ./tfx:/usr/local/airflow/tfx
+            - ./logs:/usr/local/airflow/logs
+            # end for tfx
         ports:
             - "8080:8080"
         command: webserver
